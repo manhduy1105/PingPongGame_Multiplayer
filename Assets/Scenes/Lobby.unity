@@ -1015,10 +1015,10 @@ RectTransform:
   - {fileID: 707614852}
   m_Father: {fileID: 1015371782}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 108.59833}
-  m_SizeDelta: {x: 0, y: -217.1967}
+  m_AnchorMin: {x: 0, y: 0.07863336}
+  m_AnchorMax: {x: 0.9924186, y: 1}
+  m_AnchoredPosition: {x: 0, y: 68.56853}
+  m_SizeDelta: {x: 0, y: -297.2563}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &426182164
 MonoBehaviour:
@@ -2623,8 +2623,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BasicSpawner
   LobbyManager: {fileID: 2023167162}
-  _ballPrefab:
-    RawGuidValue: 71a194eef2cf3b74d85fbed18af2ca46
   _playerPrefab:
     RawGuidValue: b57ab112c7a0e4d5eae371a55df546f3
 --- !u!1001 &5182870719516320618

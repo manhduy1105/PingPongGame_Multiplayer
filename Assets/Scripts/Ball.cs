@@ -8,29 +8,32 @@ public class Ball : NetworkBehaviour
 
     [SerializeField] private float _speed = 10f;
 
-    // Timer đồng bộ network để delay launch
+    // Timer delay launch
     [Networked] private TickTimer StartTimer { get; set; }
+
+    // RNG đồng bộ
+    [Networked] private NetworkRNG Random { get; set; }
 
     public override void Spawned()
     {
         _rb = GetComponent<Rigidbody2D>();
 
-        // Chỉ Host setup
         if (Object.HasStateAuthority)
         {
+            // Init RNG (seed theo tick → đồng bộ)
+            Random = new NetworkRNG(Runner.Tick);
+
             ResetBall();
 
-            // Delay 1s cho tất cả client sync xong
+            // Delay 1s
             StartTimer = TickTimer.CreateFromSeconds(Runner, 1f);
         }
     }
 
     public override void FixedUpdateNetwork()
     {
-        // Chỉ Host điều khiển physics
         if (!Object.HasStateAuthority) return;
 
-        // Khi timer xong → launch
         if (StartTimer.Expired(Runner))
         {
             Launch();
@@ -38,23 +41,26 @@ public class Ball : NetworkBehaviour
         }
     }
 
-    // Reset ball về giữa
+    // Reset về giữa
     public void ResetBall()
     {
         _rb.linearVelocity = Vector2.zero;
+        _rb.angularVelocity = 0f;
         transform.position = Vector2.zero;
     }
 
-    // Launch ball (CHỈ Host gọi)
+    // Launch ball
     public void Launch()
     {
         if (!Object.HasStateAuthority) return;
 
         _rb.linearVelocity = Vector2.zero;
 
-        // Random chuẩn network (không dùng Unity Random)
-        float angle = Runner.Simulation.Config.Random.Range(-45f, 45f) * Mathf.Deg2Rad;
-        float dir = Runner.Simulation.Config.Random.Range(0, 2) == 0 ? -1 : 1;
+        // Random góc (-45 → 45)
+        float angle = Mathf.Lerp(-45f, 45f, (float)Random.Next()) * Mathf.Deg2Rad;
+
+        // Random trái/phải
+        int dir = Random.Next() % 2 == 0 ? -1 : 1;
 
         Vector2 velocity = new Vector2(
             dir * Mathf.Cos(angle),
@@ -64,7 +70,7 @@ public class Ball : NetworkBehaviour
         _rb.linearVelocity = velocity;
     }
 
-    // Gọi khi có điểm → reset và launch lại
+    // Reset + launch lại
     public void ResetAndLaunch()
     {
         if (!Object.HasStateAuthority) return;
@@ -73,14 +79,13 @@ public class Ball : NetworkBehaviour
         StartTimer = TickTimer.CreateFromSeconds(Runner, 1f);
     }
 
-    /
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (!Object.HasStateAuthority) return;
 
         if (collision.gameObject.CompareTag("Paddle"))
         {
-            // Tăng tốc nhẹ mỗi lần chạm
+            // Tăng tốc nhẹ
             _rb.linearVelocity *= 1.05f;
         }
     }
