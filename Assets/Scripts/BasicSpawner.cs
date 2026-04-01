@@ -135,6 +135,11 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
             //     ball.Launch();
             //     _ballStarted = true;
             // }
+            if (runner.ActivePlayers.Count() == 2)
+            {
+                var ball = FindFirstObjectByType<Ball>();
+                ball.ResetAndLaunch();
+            }
             
         }
 
@@ -160,10 +165,19 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
         {
             runner.Despawn(networkObject);
             _spawnedCharacters.Remove(player);
+            if (runner.IsServer)
+            {
+                var ball = FindFirstObjectByType<Ball>();
+                ball.ResetBall(); // stop ball
+            }
         }
     }
-    
-    
+
+    private bool IsGameReady(NetworkRunner runner)
+    {
+
+        return runner.ActivePlayers.Count() >= 2;
+    }
 
     public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)
     {

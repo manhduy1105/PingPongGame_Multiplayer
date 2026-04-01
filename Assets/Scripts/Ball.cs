@@ -7,7 +7,7 @@ public class Ball : NetworkBehaviour
     private Rigidbody2D _rb;
 
     [SerializeField] private float _speed = 10f;
-
+    private GameManager _gameManager;
     // Timer delay launch
     [Networked] private TickTimer StartTimer { get; set; }
 
@@ -17,22 +17,21 @@ public class Ball : NetworkBehaviour
     public override void Spawned()
     {
         _rb = GetComponent<Rigidbody2D>();
-
+        _gameManager = FindFirstObjectByType<GameManager>();
         if (Object.HasStateAuthority)
         {
-            // Init RNG (seed theo tick → đồng bộ)
             Random = new NetworkRNG(Runner.Tick);
 
             ResetBall();
 
-            // Delay 1s
-            StartTimer = TickTimer.CreateFromSeconds(Runner, 1f);
+            
+            StartTimer = TickTimer.None;
         }
     }
 
     public override void FixedUpdateNetwork()
     {
-        if (!Object.HasStateAuthority) return;
+        // if (!Object.HasStateAuthority) return;
 
         if (StartTimer.Expired(Runner))
         {
@@ -88,5 +87,16 @@ public class Ball : NetworkBehaviour
             // Tăng tốc nhẹ
             _rb.linearVelocity *= 1.05f;
         }
+        if (collision.gameObject.CompareTag("LeftBorder"))
+        {
+            _gameManager.AddScoreRight(); // bên phải ghi điểm
+            ResetAndLaunch();
+        }
+        else if (collision.gameObject.CompareTag("RightBorder"))
+        {
+            _gameManager.AddScoreLeft(); // bên trái ghi điểm
+            ResetAndLaunch();
+        }
+
     }
 }
