@@ -77,26 +77,41 @@ public class Ball : NetworkBehaviour
         ResetBall();
         StartTimer = TickTimer.CreateFromSeconds(Runner, 1f);
     }
+    private void ForceReset()
+    {
+        _rb.linearVelocity = Vector2.zero;
+        _rb.angularVelocity = 0f;
 
+        // Teleport ngay lập tức
+        transform.position = Vector2.zero;
+
+        // Delay launch
+        StartTimer = TickTimer.CreateFromSeconds(Runner, 1f);
+    }
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (!Object.HasStateAuthority) return;
 
         if (collision.gameObject.CompareTag("Paddle"))
         {
-            // Tăng tốc nhẹ
+            
             _rb.linearVelocity *= 1.05f;
         }
-        if (collision.gameObject.CompareTag("LeftBorder"))
-        {
-            _gameManager.AddScoreRight(); // bên phải ghi điểm
-            ResetAndLaunch();
-        }
-        else if (collision.gameObject.CompareTag("RightBorder"))
-        {
-            _gameManager.AddScoreLeft(); // bên trái ghi điểm
-            ResetAndLaunch();
-        }
+    }
 
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (!Object.HasStateAuthority) return;
+
+        if (other.CompareTag("LeftBorder"))
+        {
+            _gameManager.AddScoreRight(); 
+            ForceReset();
+        }
+        else if (other.CompareTag("RightBorder"))
+        {
+            _gameManager.AddScoreLeft(); 
+            ForceReset();
+        }
     }
 }
