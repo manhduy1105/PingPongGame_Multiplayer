@@ -4,8 +4,8 @@ using UnityEngine;
 
 public enum CharacterClass
 {
-    left,
-    right
+    Blue,
+    Red
 }
 
 public struct PlayerProfile

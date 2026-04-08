@@ -167,8 +167,7 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
             _spawnedCharacters.Remove(player);
             if (runner.IsServer)
             {
-                var ball = FindFirstObjectByType<Ball>();
-                ball.ResetBall(); // stop ball
+                runner.Shutdown();
             }
         }
     }
@@ -181,7 +180,10 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
 
     public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)
     {
-        
+        Debug.Log("Game shutdown: " + shutdownReason);
+
+
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Lobby");
     }
 
     public void OnDisconnectedFromServer(NetworkRunner runner, NetDisconnectReason reason)

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using Fusion;
 
@@ -13,7 +14,9 @@ public class Ball : NetworkBehaviour
 
     // RNG đồng bộ
     [Networked] private NetworkRNG Random { get; set; }
-
+    [SerializeField] private AudioSource _audioSource;
+    [SerializeField] private AudioClip _padleClip;
+    [SerializeField] private AudioClip _scoreClip;
     public override void Spawned()
     {
         _rb = GetComponent<Rigidbody2D>();
@@ -83,10 +86,36 @@ public class Ball : NetworkBehaviour
         _rb.angularVelocity = 0f;
 
         // Teleport ngay lập tức
-        transform.position = Vector2.zero;
+        _rb.position = Vector2.zero;
 
         // Delay launch
         StartTimer = TickTimer.CreateFromSeconds(Runner, 1f);
+    }
+    private void BounceVertical()
+    {
+        Vector2 v = _rb.linearVelocity;
+        if (Mathf.Abs(v.y) < 0.1f)
+            v.y = v.y >= 0 ? 1f : -1f;
+        
+        v.y = -v.y;
+
+        _rb.linearVelocity = v;
+    }
+    private void BounceHorizontal()
+    {
+        Vector2 v = _rb.linearVelocity;
+
+        
+        if (Mathf.Abs(v.x) < 0.1f)
+            v.x = v.x >= 0 ? 1f : -1f;
+
+        // Đảo chiều X
+        v.x = -v.x;
+
+        _rb.linearVelocity = v;
+
+        
+        transform.position += new Vector3(v.x * 0.02f, 0, 0);
     }
     private void OnCollisionEnter2D(Collision2D collision)
     {
@@ -96,6 +125,7 @@ public class Ball : NetworkBehaviour
         {
             
             _rb.linearVelocity *= 1.05f;
+            _audioSource.PlayOneShot(_padleClip);
         }
     }
 
@@ -106,12 +136,22 @@ public class Ball : NetworkBehaviour
         if (other.CompareTag("LeftBorder"))
         {
             _gameManager.AddScoreRight(); 
-            ForceReset();
+            BounceHorizontal();
+            _audioSource.PlayOneShot(_scoreClip);
+            
         }
         else if (other.CompareTag("RightBorder"))
         {
             _gameManager.AddScoreLeft(); 
-            ForceReset();
+            BounceHorizontal();
+            _audioSource.PlayOneShot(_scoreClip);
+        }
+        else if (other.CompareTag("TopBorder") || other.CompareTag("BottomBorder"))
+        {
+            BounceVertical();
+            _audioSource.PlayOneShot(_scoreClip);
         }
     }
+
+    
 }
